@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+env/
+venv/
+.venv/
+*.sqlite3
+*.db
+ml/model.joblib
+ml/*.joblib
+ml/*.json
+ml/*.png
+ml/classification_report.txt
+analysis/simulated_campaigns.csv
+*.ipynb_checkpoints
+
+# OS
+.DS_Store
+
+# Editors
+.vscode/
+.idea/

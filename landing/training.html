@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PhishGuard Training Overview</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+      background: linear-gradient(180deg, #0b1021, #1c2c54);
+      color: #f8fafc;
+    }
+    header {
+      padding: 4rem 2rem;
+      text-align: center;
+    }
+    main {
+      background: #f9fbff;
+      color: #1c1c1c;
+      border-radius: 24px 24px 0 0;
+      padding: 3rem 1.5rem 4rem;
+    }
+    h1, h2 {
+      margin: 0;
+    }
+    .hero {
+      max-width: 780px;
+      margin: 0 auto;
+    }
+    .cta {
+      margin-top: 2rem;
+      display: inline-block;
+      padding: 0.9rem 1.8rem;
+      background: linear-gradient(135deg, #3a82f7, #6a4cf5);
+      color: #fff;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 600;
+      box-shadow: 0 18px 28px rgba(58, 130, 247, 0.28);
+    }
+    .section {
+      max-width: 940px;
+      margin: 0 auto 3rem;
+      background: #fff;
+      border-radius: 18px;
+      padding: 2rem;
+      box-shadow: 0 22px 40px rgba(20, 44, 92, 0.18);
+    }
+    .steps {
+      list-style: decimal;
+      margin-left: 1.4rem;
+    }
+    pre {
+      background: #131c37;
+      color: #f5f5f5;
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      overflow: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      font-size: 0.95rem;
+    }
+    th, td {
+      padding: 0.75rem;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+    }
+    th {
+      background: #eef3ff;
+    }
+    footer {
+      text-align: center;
+      padding-top: 2rem;
+      color: #94a3b8;
+    }
+    @media (max-width: 768px) {
+      header {
+        padding: 3rem 1rem;
+      }
+      main {
+        padding: 2rem 1rem 3rem;
+      }
+      .section {
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="hero">
+      <h1>Train the PhishGuard Model</h1>
+      <p>
+        PhishGuard learns from curated examples of phishing and legitimate communication. The workflow below guides you
+        through running the training pipeline and evaluating the results.
+      </p>
+      <a class="cta" href="../dashboard/index.html">Try the live predictor →</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="section">
+      <h2>Training workflow</h2>
+      <ol class="steps">
+        <li>Prepare the environment: <code>python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt</code></li>
+        <li>Run the training script: <code>python ml/train_model.py</code></li>
+        <li>Inspect generated artifacts in <code>ml/</code>:
+          <ul>
+            <li><code>phishguard_model.joblib</code> – serialized model pipeline</li>
+            <li><code>training_metrics.json</code> – accuracy, precision, recall, and F1</li>
+            <li><code>classification_report.txt</code> – class-level metrics</li>
+            <li><code>confusion_matrix.png</code> – model performance visualization</li>
+          </ul>
+        </li>
+        <li>Launch the API: <code>uvicorn api.main:APP --reload</code></li>
+      </ol>
+    </section>
+
+    <section class="section">
+      <h2>Dataset snapshot</h2>
+      <p>The baseline dataset (<code>data/emails.csv</code>) contains curated short-form emails and labels. Expand or replace it with real observation data.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Example text</th>
+            <th>Label</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Urgent: Your account has been compromised. Verify now at http://secure-login.com</td>
+            <td>Phishing</td>
+          </tr>
+          <tr>
+            <td>We detected unusual sign-in attempts. Reset your password immediately using this link</td>
+            <td>Phishing</td>
+          </tr>
+          <tr>
+            <td>Reminder: Team meeting tomorrow at 10 AM in the conference room</td>
+            <td>Legitimate</td>
+          </tr>
+          <tr>
+            <td>Please review the draft presentation and send feedback by Friday</td>
+            <td>Legitimate</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>Next steps</h2>
+      <p>
+        Replace the starter dataset with labeled phishing intelligence from your security stack, augment the feature
+        pipeline with URL and attachment heuristics, and monitor metrics over time. Retrain regularly to stay ahead of evolving threats.
+      </p>
+    </section>
+
+    <footer>
+      Crafted with care to help teams spot phishing before it spreads.
+    </footer>
+  </main>
+</body>
+</html>

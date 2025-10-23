@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PhishGuard Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      color-scheme: light dark;
+      font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+    }
+    body {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #f4f7fb;
+      color: #1c1c1c;
+    }
+    header {
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 0.2rem;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 10px 24px rgba(27, 33, 58, 0.1);
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+    textarea {
+      width: 100%;
+      min-height: 180px;
+      border-radius: 8px;
+      padding: 0.75rem;
+      border: 1px solid #cbd5f5;
+      font-size: 1rem;
+      resize: vertical;
+    }
+    button {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #3a82f7, #6a4cf5);
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 12px 20px rgba(58, 130, 247, 0.2);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 28px rgba(58, 130, 247, 0.25);
+    }
+    .result {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+    .result.phishing {
+      background: rgba(220, 53, 69, 0.12);
+      color: #ae1c2f;
+      border: 1px solid rgba(220, 53, 69, 0.32);
+    }
+    .result.legitimate {
+      background: rgba(40, 167, 69, 0.12);
+      color: #216530;
+      border: 1px solid rgba(40, 167, 69, 0.32);
+    }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .status-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #dc3545;
+    }
+    .status-indicator.ready {
+      background: #28a745;
+    }
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #5c6370;
+    }
+    code {
+      background: rgba(33, 150, 243, 0.12);
+      padding: 0.25rem 0.4rem;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🛡️ PhishGuard</h1>
+    <p>Paste suspicious email content below to evaluate whether it might be a phishing attempt.</p>
+  </header>
+
+  <section class="card">
+    <div class="status">
+      <span class="status-indicator" id="status-indicator"></span>
+      <span id="status-text">Checking API status…</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <label for="email-text"><strong>Email content</strong></label>
+    <textarea id="email-text" placeholder="Dear user, your account has been flagged for suspicious activity…"></textarea>
+    <button id="analyze-btn">Analyze email</button>
+    <div id="result-container"></div>
+  </section>
+
+  <section class="card">
+    <h2>How it works</h2>
+    <p>
+      The classifier is built with scikit-learn using a TF-IDF representation and a logistic regression model. It was trained on curated examples of phishing
+      and legitimate corporate emails. Confidence scores show how strongly the model believes an email belongs to a class; always combine model results with security best practices.
+    </p>
+  </section>
+
+  <footer>
+    Run the training pipeline with <code>python ml/train_model.py</code> before starting the API.
+  </footer>
+
+  <script>
+    const statusIndicator = document.getElementById("status-indicator");
+    const statusText = document.getElementById("status-text");
+    const analyzeBtn = document.getElementById("analyze-btn");
+    const resultContainer = document.getElementById("result-container");
+
+    const updateStatus = async () => {
+      try {
+        const response = await fetch("/health");
+        const payload = await response.json();
+        const ready = payload.status === "ready";
+        statusIndicator.classList.toggle("ready", ready);
+        statusText.textContent = ready ? "Model ready for predictions" : "Model not loaded";
+      } catch (err) {
+        statusIndicator.classList.remove("ready");
+        statusText.textContent = "API unavailable";
+      }
+    };
+
+    const renderResult = ({ label, confidence }) => {
+      resultContainer.innerHTML = "";
+      const el = document.createElement("div");
+      el.classList.add("result");
+      el.classList.add(label === "phishing" ? "phishing" : "legitimate");
+      el.textContent = `Prediction: ${label.toUpperCase()} (confidence ${(confidence * 100).toFixed(1)}%)`;
+      resultContainer.appendChild(el);
+    };
+
+    analyzeBtn.addEventListener("click", async () => {
+      const text = document.getElementById("email-text").value.trim();
+      if (!text) {
+        alert("Please paste some email content first.");
+        return;
+      }
+      analyzeBtn.disabled = true;
+      analyzeBtn.textContent = "Analyzing…";
+      try {
+        const response = await fetch("/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text })
+        });
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.detail || "Prediction failed");
+        }
+        const payload = await response.json();
+        renderResult(payload);
+      } catch (err) {
+        resultContainer.innerHTML = "";
+        const el = document.createElement("div");
+        el.classList.add("result", "phishing");
+        el.textContent = err.message;
+        resultContainer.appendChild(el);
+      } finally {
+        analyzeBtn.disabled = false;
+        analyzeBtn.textContent = "Analyze email";
+      }
+    });
+
+    updateStatus();
+  </script>
+</body>
+</html>
