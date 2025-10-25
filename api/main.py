@@ -8,6 +8,7 @@ from typing import Dict, Optional
 
 import joblib
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 LOGGER = logging.getLogger("phishguard.api")
@@ -15,6 +16,7 @@ APP = FastAPI(title="PhishGuard API", version="1.0.0")
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 MODEL_PATH = PROJECT_ROOT / "ml" / "phishguard_model.joblib"
+DASHBOARD_PATH = PROJECT_ROOT / "dashboard"
 LABEL_MAPPING: Dict[int, str] = {0: "legitimate", 1: "phishing"}
 
 
@@ -105,3 +107,10 @@ def predict(request: PredictionRequest) -> PredictionResponse:
         confidence = 0.0
 
     return _format_prediction(int(prediction), confidence)
+
+
+APP.mount(
+    "/",
+    StaticFiles(directory=str(DASHBOARD_PATH), html=True),
+    name="dashboard",
+)

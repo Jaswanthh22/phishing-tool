@@ -3,6 +3,14 @@
 PhishGuard is a reference project that demonstrates how to train a lightweight phishing email classifier, expose it
 through a FastAPI service, and provide simple UI assets for analysts and awareness training.
 
+## User value
+
+- Jump-starts phishing detection with a reproducible TF-IDF + logistic regression pipeline and ready-made artifacts for deployment.
+- Offers a FastAPI scoring service that plugs into mail gateways, SOAR workflows, or ad-hoc scripts via REST endpoints.
+- Delivers analyst tooling—interactive dashboard, landing page, and sample templates—to support investigations and awareness exercises without extra frontend work.
+- Includes curated starter data, automated reports, and pytest coverage so teams can retrain on their own corpora while tracking accuracy, precision, recall, and F1.
+- Documents ethical guardrails and authorization controls to help organizations roll out the solution responsibly.
+
 ## Features
 
 - **Training pipeline** – TF-IDF + logistic regression model trained on curated phishing and legitimate emails.

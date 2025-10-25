@@ -156,12 +156,16 @@ def evaluate_predictions(y_true: pd.Series, y_pred: np.ndarray) -> Dict[str, Any
     precision, recall, f1, support = precision_recall_fscore_support(
         y_true, y_pred, average="binary", zero_division=0
     )
+    if support is None:
+        support_value = int((y_true == 1).sum())
+    else:
+        support_value = int(support)
     metrics = {
         "accuracy": accuracy_score(y_true, y_pred),
         "precision": precision,
         "recall": recall,
         "f1_score": f1,
-        "support": int(support),
+        "support": support_value,
     }
     LOGGER.info("Evaluation metrics: %s", metrics)
     return metrics

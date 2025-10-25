@@ -1,8 +1,11 @@
 """Tests for the PhishGuard training pipeline."""
 
+import numpy as np
+import pandas as pd
 import pytest
 
 from ml import DEFAULT_DATASET, build_pipeline, load_dataset, split_data
+from ml.train_model import evaluate_predictions
 
 
 def test_dataset_loads_successfully() -> None:
@@ -22,3 +25,10 @@ def test_pipeline_trains_and_predicts(test_size: float) -> None:
     assert len(predictions) == len(X_test)
     # Ensure predictions are binary and within expected range
     assert set(predictions).issubset({0, 1})
+
+
+def test_evaluate_predictions_handles_support_none() -> None:
+    y_true = pd.Series([0, 1, 1, 0])
+    y_pred = np.array([0, 1, 0, 0])
+    metrics = evaluate_predictions(y_true, y_pred)
+    assert isinstance(metrics["support"], int)
